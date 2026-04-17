@@ -1,3 +1,4 @@
+---Revenue & product performance
 WITH ProductRevenue AS (
     SELECT 
         product_id,
@@ -16,7 +17,7 @@ RevenueShare AS (
 SELECT * FROM RevenueShare 
 ORDER BY total_revenue DESC;
 
-----Doanh thu cộng dồn (Cumulative Revenue)
+----Cumulative Revenue
 
 WITH ProductRevenue AS (
     SELECT 
@@ -29,23 +30,23 @@ CumulativeAnalysis AS (
     SELECT 
         product_id,
         total_revenue,
-        -- Tính tổng doanh thu tích lũy từ cao xuống thấp
+        -- Calculate cumulative revenue from highest to lowest
         SUM(total_revenue) OVER(ORDER BY total_revenue DESC) as cumulative_revenue,
-        -- Tính tổng doanh thu toàn hệ thống
+        -- Calculate total revenue across the entire system
         SUM(total_revenue) OVER() as grand_total
     FROM ProductRevenue
 )
 SELECT 
     product_id,
     total_revenue,
-    -- Tính tỷ lệ phần trăm tích lũy
+    -- Calculate cumulative percentage contribution
     ROUND((cumulative_revenue / grand_total) * 100, 2) as cumulative_pct
 FROM CumulativeAnalysis
 ORDER BY total_revenue DESC;
 
------danh mục Aging Components
+----- Aging Components
 WITH ComponentUsage AS (
-    -- Bước 1: Tính tổng linh kiện đã xuất kho dựa trên Sales và BOM
+    -- Bước 1: Calculate total component consumption based on sales and BOM
     SELECT 
         b.component_id,
         SUM(s.quantity * b.quantity) AS total_used
@@ -54,7 +55,7 @@ WITH ComponentUsage AS (
     GROUP BY b.component_id
 ),
 ComponentReceived AS (
-    -- Bước 2: Tính tổng linh kiện đã nhập kho từ PO
+    -- Bước 2: Calculate total component receipts from purchase orders
     SELECT 
         component_id,
         SUM(delivered_qty) AS total_received
@@ -62,7 +63,7 @@ ComponentReceived AS (
     GROUP BY component_id
 ),
 InventoryTurnover AS (
-    -- Bước 3: Tính toán chỉ số vòng quay và tồn kho ước tính
+    -- Bước 3: Calculate inventory levels and turnover rate
     SELECT 
         c.component_id,
         c.component_name,
@@ -70,7 +71,7 @@ InventoryTurnover AS (
         COALESCE(r.total_received, 0) AS imported_qty,
         COALESCE(u.total_used, 0) AS consumed_qty,
         (COALESCE(r.total_received, 0) - COALESCE(u.total_used, 0)) AS current_stock,
-        -- Tính vòng quay: Tiêu thụ / Nhập kho
+        --  Inventory turnover ratio = consumption / received quantity
         CASE 
             WHEN COALESCE(r.total_received, 0) = 0 THEN 0 
             ELSE CAST(COALESCE(u.total_used, 0) AS FLOAT) / r.total_received 
@@ -79,7 +80,7 @@ InventoryTurnover AS (
     LEFT JOIN ComponentReceived r ON c.component_id = r.component_id
     LEFT JOIN ComponentUsage u ON c.component_id = u.component_id
 )
--- Bước 4: Phân loại linh kiện Aging
+-- Bước 4: Classify components based on turnover rate (aging analysis)
 SELECT *,
     CASE 
         WHEN turnover_rate < 0.2 THEN 'Slow Moving / High Aging'
