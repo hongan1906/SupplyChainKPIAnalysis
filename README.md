@@ -33,11 +33,6 @@ The queries assume the existence of the following relational structure:
 
 ---
 
-## 🚀 Key SQL Concepts Used
-* **CTEs (Common Table Expressions):** For modular and readable code.
-* **Window Functions:** `SUM() OVER()` for calculating grand totals and `SUM() OVER(ORDER BY...)` for running totals.
-* **Joins:** Complex joins between Sales, BOM, and PO lines to bridge finished goods and raw materials.
-* **Conditional Logic:** `CASE` statements for business rule classification.
 
 ---
 
