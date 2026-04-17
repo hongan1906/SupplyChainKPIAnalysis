@@ -34,7 +34,3 @@ The queries assume the existence of the following relational structure:
 ---
 
 
----
-
-## 🛠 Usage
-Each script is self-contained. You can execute them in your SQL workbench (PostgreSQL, SQL Server, BigQuery, etc.) to generate reports for supply chain management or financial auditing.
