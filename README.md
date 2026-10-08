@@ -158,4 +158,3 @@ sqlite3 supply_chain.db < Assignment_Script.sql
 ---
 
 **An Truong** · Helsinki, Finland · Supply chain & data analytics
-
